@@ -20,4 +20,4 @@ def simplex_m2f():
     return None
 
 # Identificar variables con sus coeficientes (Solo era una prueba)
-patron = re.compile("\-{0,1}\s{0,1}\d{0,}x{1}\d{1}")
+patron = re.compile("(\-{0,1}\s{0,}\d{0,}[a-zA-Z]{1}\d{1})|[zZ]")
