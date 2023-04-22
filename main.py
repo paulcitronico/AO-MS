@@ -11,8 +11,8 @@ symbol = re.compile("[a-zA-Z]\d{0,}") #Validar variables
 digit = re.compile("(^\W[0-9]{1,})|(^[0-9]{1,})|(^\-{1}\W{0,}[0-9]{1,})") #Validar digitos
 ld = re.compile("={1}\W{0,}\d{1,}") # Validar lado derecho
 
-search = coeficiente.finditer(Z)
-print(list(search))
+#search = coeficiente.finditer(Z)
+#print(list(search))
 
 des = getDesigualdad(res)
 
@@ -28,23 +28,25 @@ else:
         z = list(coeficiente.finditer(Z))
 
         template = ""
-
         for e in range(1, len(z)):
             template += "- {} ".format(z[e].group())
 
         z_ampliado = z[0].group() + template + "= 0"
+        z_ampliado = re.sub("\s", "", z_ampliado)
+        print("====================Función objetivo ampliado====================")
+        print(z_ampliado)
         c_z_ampliado = list(coeficiente.finditer(z_ampliado))
 
         coef_z = {}
         
         for column in c_z_ampliado:
             coeficiente_z = column.group()
-            print(coeficiente_z)
+            #print(coeficiente_z)
             sym_z = symbol.search(coeficiente_z)
             if sym_z.group() not in columns:
                 columns.append(sym_z.group())
             d = digit.search(coeficiente_z)
-            print(d)
+            #print(d)
             if d == None:
                 coef_z[sym_z.group()] = 1
             else:
@@ -58,6 +60,7 @@ else:
             holgura = "h{}".format(r+1)
             restriccion_ampliada = "{}+ {} ={}".format(split[0],holgura,split[1])
             restricciones_ampliadas.append(restriccion_ampliada)
+        print("====================Restricciones Ampliadas====================")
         print(restricciones_ampliadas)
 
         for f in restricciones_ampliadas:
@@ -90,8 +93,16 @@ else:
         for i in range(len(df)):
             df.loc[i] = df.loc[i].fillna(0)
 
-        print(df)
+        # Exportar dataframe
+        df.to_csv("./data1.csv")
 
+        print("====================Dataframe====================")
+        print(df)
+        print("====================Array de Numpy====================")
+        arr = df.to_numpy()
+        print(arr)
+
+        print("====================Método====================")
         simplex_estandar()
     else:
         simplex_m2f()
