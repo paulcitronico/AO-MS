@@ -92,6 +92,7 @@ else:
         # Limpiar valores NaN del dataframe
         for i in range(len(df)):
             df.loc[i] = df.loc[i].fillna(0)
+            df.loc[i] = pd.to_numeric(df.loc[i])
 
         # Exportar dataframe
         df.to_csv("./data1.csv")
