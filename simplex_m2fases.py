@@ -2,13 +2,13 @@ import re
 import pandas as pd
 import numpy as np
 
-#restricciones = 60x1 + 60x2 >= 300, 12x1 + 6x2 >= 36,10x1 + 30x2 >= 90,x1 >= 0, x2 >= 0
+#restricciones = 60x1 + 60x2 >= 300, 12x1 + 6x2 >= 36,10x1 + 30x2 >= 90
 
 # funcion que amplia las restricciones segun sea el caso 
 def ampliar_restricciones():
     
     restricciones_ampliadas = []
-    patron = r'[<=>]='
+    patron = r'[<=>]='      # detecta los operadores <=,>=,=
 
     #introducir las restricciones separadas por coma
     restricciones = input("Introducir las restricciones separadas por coma: ")
@@ -48,12 +48,11 @@ def obtener_variables(restricciones):
 
     # lista para almacenar los nombres de variables
     variables = []
-    patron = r'\b[a-zA-Z]+\d+\b'
+    patron = r'[+\-*/]?[a-zA-Z]+\d*[+\-*/]?'    # detecta variables que empiezan con una letra seguida por cero o más dígitos y que tienen un operador matemático a la derecha o a la izquierda     
     
     # buscar nombres de variables en cada restricción
     for restriccion in restricciones:
-        # utilizar re.findall() para buscar nombres de variables en la restricción
-        nombres_variables = re.findall(patron, restriccion)
+        nombres_variables = re.findall(patron, restriccion)     # utilizar re.findall() para buscar nombres de variables en la restricción
         # agregar los nombres de variables encontrados a la lista de variables
         for nombre in nombres_variables:
             if nombre not in variables:
@@ -74,7 +73,7 @@ def obtener_variables(restricciones):
 
 # funcion que obtiene los valores numericos de las restricciones ( recibe listas de las restricciones y nombre de las variables ) 
 def obtener_coeficientes(restricciones, variables):
-    patron = r'(-?\d*(?:\.\d+)?)\s*([a-zA-Z]+[\d]*)'
+    patron = r'(-?\d*(?:\.\d+)?)\s*([a-zA-Z]+[\d]*)'    # detecta los coeficientes y variables de la restriccion ( incluye negativos )
     coeficientes = []
     dicc_variables = {}
 
@@ -83,7 +82,7 @@ def obtener_coeficientes(restricciones, variables):
         dicc_variables[variable] = i
 
     for restriccion in restricciones:
-        lista_coeficientes = [0] * len(variables)
+        lista_coeficientes = [0] * len(variables)           # lista para guardar los coeficientes
         tuplas_coeficientes = re.findall(patron, restriccion)
 
         for tupla in tuplas_coeficientes:   
@@ -116,39 +115,50 @@ def obtener_coeficientes(restricciones, variables):
 #===========================================================================================================================
 
 #funcion que calcula cuales son las columnas con variables artificiales ( recibe una lista del nombre de las variables )
-def obtener_variables_artificiales(variables):
-    variables_artificiales = [var for var in variables if var.startswith('a')]
+def seleccionar_variables_artificiales(variables,nombre_variable):
+    variables_artificiales = [var for var in variables if var.startswith(nombre_variable)]  # busca dentro de la lista de variables la que comienze con la letra asignada
+    return variables_artificiales
+
+# funcion que obtiene las variables segun su tipo (letra con que comienza a,e,h,x) ( recibe la matriz )
+def seleccionar_variables_por_nombre(matriz,nombre_variable):
+    variables = matriz.columns                              #obtiene el nombre de las columnas de la matriz
+    variables_artificiales = [var for var in variables if var.startswith(nombre_variable)]  # busca dentro de la lista de variables la que comienze con la letra asignada
     return variables_artificiales
 
 #===========================================================================================================================.
 
-# funcion que obtiene la columna pivote en base al nombre de esta
-def obtener_columna_pivote(matriz,nombre_columna):
+# funcion que obtiene una columna en base al nombre de esta
+def seleccionar_columna(matriz,nombre_columna):
     columna = matriz.loc[:, nombre_columna]     # selecciona la columna con el nombre asignado( a1,a2,x1,x2,etc )
     return columna
 
+# funcion que obtiene una fila en base al numero de esta
+def seleccionar_fila(matriz,pos_fila):
+    nombre_fila = matriz.index[pos_fila]    #busca el nombre asignado en base a su posicion
+    fila = matriz.loc[nombre_fila]     # selecciona la fila con el nombre asignado( a1,a2,x1,x2,etc )
+    return fila
 #===========================================================================================================================
 
 # funcion que crea una matriz tipo dataframe de pandas
 def crear_matriz():
     restricciones = ampliar_restricciones()
+    #restricciones = ['-Z + a1 + a2 + a3 = 0','60x1 + 60x2 - e1 + a1 = 300', '12x1 + 6x2  - e2 + a2 = 36', '10x1 + 30x2  - e3 + a3 = 90']
     variables = obtener_variables(restricciones)
-
-    #restricciones = ['-Z + a1 + a2 + a3 = 0','60x1 + 60x2  -e1 + a1 = 300', '12x1 + 6x2  - e2 + a2 = 36', '10x1 + 30x2  - e3 + a3 = 90']
+    
     #variables = ['Z', 'e1', 'a1', 'x1', 'e2', 'a2', 'x2', 'e3', 'a3', 'LD']
-    z = '-Z + a1 + a2 + a3 = 0'
+    z = 'Z + a1 + a2 = 0'
     restricciones.insert(0,z)           #se agrega la funcion z a la lista de restricciones  (esto es temporal)
-
     coeficientes = obtener_coeficientes(restricciones,variables)
 
     # formar los nombres para las filas
-    filas = obtener_variables_artificiales(variables)
-    filas.insert(0,'Z')
+    artificiales = seleccionar_variables_artificiales(variables,'a')        # se obtiene una lista de las variables artificiales
+    holguras = seleccionar_variables_artificiales(variables,'h')            # se obtiene una lista de las variables de holgura
+    filas = artificiales + holguras                                         # se juntan las listas 
+    filas.insert(0,'Z')                                                     # se agrega la variable Z al inicio de la lista
 
     # crear dataframe con los datos
     matriz = pd.DataFrame(coeficientes, columns=variables, index=filas)
     print(matriz)
-
     return matriz
 
 #===========================================================================================================================
@@ -162,34 +172,94 @@ def crear_matriz():
 #===========================================================================================================================
 
 # funcion que calcula la columna pivote ( recibe la matriz y el nombre de la columna que se quiere tratar) 
-def seleccionar_pivote(matriz,columna):
+def obtener_fila_pivote(matriz,columna):
 
-    LD = matriz.iloc[:, -1]                 # seleccionar columna del lado derecho
-    div = []                                # lista para guardar las divisiones
+    LD = matriz.iloc[:, -1]                         # seleccionar columna del lado derecho
+    valor_minimo = 0                                # lista para guardar las divisiones
 
-    col = obtener_columna_pivote(matriz,columna)
+    col = seleccionar_columna(matriz,columna)       # obtiene una columna entera del dataframe(matriz)
 
     # ciclo para dividir el lado derecho por la columna pivote 
     for i in range(len(LD)):
-        if(col[i]!=float(0) and LD[i]>float(0)):
-            div.append((LD[i] / col[i],i))      # añadir a la lista las divisiones junto con su posicion 
-    
-    print(div)
-    menor = min([tupla[0] for tupla in div])   #obtener el valor minimo
-    posicion = [tupla[1] for tupla in div if tupla[0] == menor][0]  #obtener la posicion  del valor minimo
+        if(col[i]!=float(0) and LD[i]>float(0)):    # evitar divisones por 0
+            aux = LD[i] / col[i]                    # hacer la division 
+            if aux <= aux:                          # guardar el valor minimo de entre todas las divisiones
+                valor_minimo = i
 
-    pivote = [menor,posicion]       # formar tupla con el pivote y la fila a la que pertenece
-
-    return pivote
-            
+    return valor_minimo
+       
 #===========================================================================================================================
 
-# funcion reduccion gaussiana 
-#def gauss(matriz,columna):
- #   col_artificiales = obtener_variables_artificiales(variables)
-  # return 0
+# funcion que hace reduccion gaussiana y retorna una matriz con los nuevos valores (recibe una matriz y el nombre de la columna)
+def reduccion_gauss(matriz,columna):
+    # guardar datos de la matriz actual para luego crear la nueva
+    variables = matriz.columns
+    index = matriz.index
 
-matriz = crear_matriz()
+    columna_pivote = seleccionar_columna(matriz, columna)       # selecciona la columna pivote
+    num_fila_pivote = obtener_fila_pivote(matriz, columna)      # obtiene la posicion de la fila pivote
+    fila_pivote = seleccionar_fila(matriz,num_fila_pivote)      # selecciona la fila pivote
+    pivote = matriz.loc[fila_pivote.name,columna_pivote.name]   # obtiene el valor del pivote
+
+    # divide la fila pivote por el valor del pivote
+    for i in range(len(fila_pivote)):
+        fila_pivote[i] = fila_pivote[i]/pivote
+
+    #print(fila_pivote)
+    matriz_aux = []
+    col_piv = list(columna_pivote)
+    
+    # para cada fila restante: valor_actual - (valor_columna_pivote * valor_fila_pivote)
+    for i in range(len(columna_pivote)):
+        if i!=num_fila_pivote:                  # solo si NO es la fila pivote
+            fila_aux = seleccionar_fila(matriz,i)
+
+            for j in range(len(fila_aux)):
+                mult = col_piv[i]*fila_pivote[j]
+                fila_aux[j] = fila_aux[j] - mult
+            matriz_aux.insert(i,fila_aux)
+
+            fila_aux = []     # vaciar la fila auxiliar.
+        # en caso de ser la fila pivote, guardar la fila directamente en la matriz auxiliar
+        else:                               
+            fila_aux = seleccionar_fila(matriz,i)
+            matriz_aux.insert(i,fila_aux)
+            fila_aux = []     # vaciar la fila auxiliar
+    
+    # crear nueva matriz con los nuevos datos
+    nueva_matriz = pd.DataFrame(matriz_aux, columns=variables, index=index)
+    print(nueva_matriz)
+
+    return nueva_matriz
+#===========================================================================================================================
+# funcion que busca el valor minimo de una fila ( recibe una matriz y la posicion de la fila)
+def buscar_columna_pivote(matriz, pos_fila):
+    fila_z = seleccionar_fila(matriz, pos_fila)     # seleccionar la fila Z
+    fila_z.pop('LD')                                # eliminar la columna LD
+    minimo = min(fila_z)                            # buscar el valor minimo
+    indice_minimo = fila_z.idxmin()                 # buscar el indice del valor minimo
+
+    return indice_minimo                            # retornar el indice (nombre de la columna)
+
+                      
+#===========================================================================================================================
+
+#===========================================================================================================================
+matriz = crear_matriz()     # crear matriz con los datos
+
+columnas_artificiales = seleccionar_variables_por_nombre(matriz,'a')    #seleccionar la lista de columnas a trabajar
+
+for i in range(len(columnas_artificiales)):
+   matriz = reduccion_gauss(matriz,columnas_artificiales[i])    # se actualiza la matriz con la nueva matriz constantemente
+
+#restricciones = 60x1 + 60x2 >= 300, 12x1 + 6x2 >= 36,10x1 + 30x2 >= 90
+
+#while any(i < 0 for i in fila_z):
+#negativo = True
+#for i in range(10):
+ #   columna_pivote = buscar_columna_pivote(matriz,0)        # buscar columna pivote en la fila Z
+  #  matriz = reduccion_gauss(matriz,columna_pivote[0])         # reduccion gaussiana
+   # negativo = columna_pivote[1]
 
 
 
