@@ -1,16 +1,3 @@
-import re
-
-def getDesigualdad(restricciones:list) -> list:
-    patron = re.compile(">=|<=")
-    desigualdad = []
-
-    for r in restricciones:
-        match = patron.search(r)
-        if match.group() not in desigualdad:
-            desigualdad.append(match.group())
-
-    return desigualdad
-
 def simplex_estandar():
     print("Estándar")
     return None
@@ -18,9 +5,6 @@ def simplex_estandar():
 def simplex_m2f():
     print("2 Fases")
     return None
-
-# Identificar variables con sus coeficientes (Solo era una prueba)
-patron = re.compile("(\-{0,1}\s{0,}\d{0,}[a-zA-Z]{1}\d{1})|[zZ]")
 
 # se importa la libreria para usar ramdom
 import random
@@ -66,10 +50,10 @@ def getValoresFilaColumna(matriz,posicion):
 #se crea una matriz de prueba de n dimesiones 4x6 con numeros aleatorios y distintos
 matriz = [[random.randint(1,100) for i in range(6)] for j in range(4)]
 #se imprime la matriz
-print(matriz)
+#print(matriz)
 #se imprime la posicion del valor menor
-print(getPosicionMenor(matriz))
+#print(getPosicionMenor(matriz))
 #se imprime los valores de la fila y columna
-print(getValoresFilaColumna(matriz,getPosicionMenor(matriz)))
+#print(getValoresFilaColumna(matriz,getPosicionMenor(matriz)))
 
 #-------------------------------
