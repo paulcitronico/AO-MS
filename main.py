@@ -1,5 +1,7 @@
 from simplex import simplex_m2f
+from simplexmetodos import *
 import pandas as pd
+import numpy as np
 import re
 
 from input_simplex_estandar import *
@@ -70,7 +72,24 @@ else:
         df = limpiar_dataframe(df)
 
         print(df)
-
+        #matriz principal
+        matriz=df.to_numpy()
+        #se crea un archivo csv con la matriz inicial
+        crearArchivo(matriz)
+        print(matriz)
+        print("columna pivote: "+str(columnaPivote(matriz)))
+        print("fila pivote: "+str(filaPivote(matriz,columnaPivote(matriz))))
+        #se crea un bucle que termina cuando los valores de la primera fila de la matriz son >= 0
+        #en cada iteracion se crea un archivo csv con la matriz reducida
+        while min(matriz[0]) < 0:
+            matriz = opOtrasfilas(opFilapivote(matriz,filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz)),filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz))
+            crearArchivo(matriz)
+            #print(matriz)
+            #print("columna pivote: "+str(columnaPivote(matriz)))
+            #print("fila pivote: "+str(filaPivote(matriz,columnaPivote(matriz))))
+            #print("matriz reducida")
+            #print(matriz)
+            #print("-------------------------------")
         # Exportar dataframe
         df.to_csv("./data1.csv")
     else:

@@ -33,7 +33,7 @@ def filaPivote(matriz,posicion):
 def opFilapivote(matriz,posicionFila,posicionColumna):
     #se almacena en una variable el valor de la posicion pivote
     pivote = matriz[posicionFila][posicionColumna]
-    print("valor pivote: "+str(pivote))
+    #print("valor pivote: "+str(pivote))
     #se divide la fila pivote por el valor pivote
     matriz[posicionFila] = [matriz[posicionFila][i]/pivote for i in range(len(matriz[posicionFila]))]
     return matriz
@@ -54,6 +54,8 @@ def opOtrasfilas(matriz,posicionFila,posicionColumna):
                 matriz[i][j] = matriz[i][j] - (pivote * matriz[posicionFila][j])
     return matriz
 
+
+
 def crearArchivo(matriz):
     #se crea un archivo csv
     archivo = open("matriz.csv","a")
@@ -69,13 +71,16 @@ def crearArchivo(matriz):
 #test de metodos
 #-------------------------------
 #se crea una matriz del ejemplo puertas y ventanas
-#matriz = [[1,-30000,-50000,0,0,0,0],[0,1,0,1,0,0,4],[0,0,2,0,1,0,12],[0,3,2,0,0,1,18]]
+matriz = [[1,-30000,-50000,0,0,0,0],[0,1,0,1,0,0,4],[0,0,2,0,1,0,12],[0,3,2,0,0,1,18]]
 #ejemplo matriz perfumeria
 #matriz= [[1,-2,-2,0,0,0,0,0],[0,1,0,1,0,0,0,45],[0,0,1,0,1,0,0,100],[0,1,3,0,0,1,0,80],[0,2,1,0,0,0,1,100]]
 
 #se crea un archivo csv con la matriz inicial
-#crearArchivo(matriz)
-
+crearArchivo(matriz)
+print(matriz)
+print("columna pivote: "+str(columnaPivote(matriz)))
+print("fila pivote: "+str(filaPivote(matriz,columnaPivote(matriz))))
+    
 #se crea un archivo csv con la matriz reducida
 #crearArchivo(opFilapivote(matriz,filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz)))
 #matriz2=opOtrasfilas(opFilapivote(matriz,filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz)),filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz))
@@ -86,4 +91,16 @@ def crearArchivo(matriz):
 #crearArchivo(opFilapivote(matriz3,filaPivote(matriz3,columnaPivote(matriz3)),columnaPivote(matriz3)))
 #matriz4=opOtrasfilas(opFilapivote(matriz3,filaPivote(matriz3,columnaPivote(matriz3)),columnaPivote(matriz3)),filaPivote(matriz3,columnaPivote(matriz3)),columnaPivote(matriz3))
 #crearArchivo(matriz4)
+
+#se crea un bucle que termina cuando los valores de la primera fila de la matriz son >= 0
+#en cada iteracion se crea un archivo csv con la matriz reducida
+while min(matriz[0]) < 0:
+    matriz = opOtrasfilas(opFilapivote(matriz,filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz)),filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz))
+    crearArchivo(matriz)
+    print(matriz)
+    print("columna pivote: "+str(columnaPivote(matriz)))
+    print("fila pivote: "+str(filaPivote(matriz,columnaPivote(matriz))))
+    print("matriz reducida")
+    print(matriz)
+    print("-------------------------------")
 #-------------------------------
