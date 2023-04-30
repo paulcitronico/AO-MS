@@ -1,109 +1,77 @@
-from simplex import getDesigualdad, simplex_m2f, simplex_estandar, patron as coeficiente
+from simplex import simplex_m2f
 import pandas as pd
 import re
+
+from input_simplex_estandar import *
 
 r = input("Ingrese sus restricciones separando cada una con una coma: ")
 res = r.split(",")
 
 Z = input("Ingrese la función objetivo: ")
 
-symbol = re.compile("[a-zA-Z]\d{0,}") #Validar variables
-digit = re.compile("(^\W[0-9]{1,})|(^[0-9]{1,})|(^\-{1}\W{0,}[0-9]{1,})") #Validar digitos
-ld = re.compile("={1}\W{0,}\d{1,}") # Validar lado derecho
-
-#search = coeficiente.finditer(Z)
-#print(list(search))
-
 des = getDesigualdad(res)
+print(des)
 
 # Primer caso: encontrar más de 2 desigualdades
 if len(des) > 1:
-    simplex_m2f
+    simplex_m2f()
 else:
     # Segundo caso: encontrar una desigualdad
     if des[0] == "<=":
         columns = []
-        coe = []
-        # Ampliar la función objetivo
-        z = list(coeficiente.finditer(Z))
+        # Generar la matriz con los coeficientes para generar el dataframe
+        matriz_coeficientes = []
+        # Necesitamos encontrar los términos de la función objetivo para posteriormente ampliarla.
+        z = list(terminos.finditer(Z))
 
         template = ""
+        # Iteramos cada término de la función objetivo
         for e in range(1, len(z)):
-            template += "- {} ".format(z[e].group())
+            template += "-{} ".format(z[e].group())
 
+        # Con operaciones de strings, armamos la función objetivo ampliado
         z_ampliado = z[0].group() + template + "= 0"
+        # De la función objetivo ampliada, reemplazamos los espacios en blanco por una cadena vacía
         z_ampliado = re.sub("\s", "", z_ampliado)
-        print("====================Función objetivo ampliado====================")
+        # En caso de encontrar doble signo negativo, reemplazar por un +
+        z_ampliado = re.sub("--","+",z_ampliado)
+        print("====================Función Objetivo Ampliada====================")
         print(z_ampliado)
-        c_z_ampliado = list(coeficiente.finditer(z_ampliado))
 
-        coef_z = {}
-        
-        for column in c_z_ampliado:
-            coeficiente_z = column.group()
-            #print(coeficiente_z)
-            sym_z = symbol.search(coeficiente_z)
-            if sym_z.group() not in columns:
-                columns.append(sym_z.group())
-            d = digit.search(coeficiente_z)
-            #print(d)
-            if d == None:
-                coef_z[sym_z.group()] = 1
-            else:
-                coef_z[sym_z.group()] = d.group()
-        coe.append(coef_z)
+        # Volvemos a generar una lista con los términos de la función objetivo ampliada
+        c_z_ampliado = list(terminos.finditer(z_ampliado))
 
-        # Ampliar restricciones (con holguras)
-        restricciones_ampliadas = []
-        for r in range(len(res)):
-            split = res[r].split(des[0])
-            holgura = "h{}".format(r+1)
-            restriccion_ampliada = "{}+ {} ={}".format(split[0],holgura,split[1])
-            restricciones_ampliadas.append(restriccion_ampliada)
-        print("====================Restricciones Ampliadas====================")
-        print(restricciones_ampliadas)
+        # Buscar los coeficientes de la función objetivo ampliada
+        coeficientes, columns = search_variables_y_coeficientes(c_z_ampliado, columns)
 
+        # Incorporar los coeficientes a la matriz
+        matriz_coeficientes.append(coeficientes)
+
+        # como son restricciones de menor o igual, se agregan variables de holgura a las restricciones
+        restricciones_ampliadas = agregar_holguras(res, des[0])
+
+        # Para cada restricción ampliada
         for f in restricciones_ampliadas:
-            c = coeficiente.finditer(f)
-            s = list(c)
-            
-            coefis = {}
-            for i in s:
-                # Buscar variables de holgura y agregarlas a la columna del dataframe
-                sym = symbol.search(i.group())
-                if sym.group() not in columns:
-                    columns.append(sym.group())
-                # Buscar coeficientes
-                search = digit.search(i.group())
-                if search == None:
-                    coefis[sym.group()] = 1
-                else:
-                    coefis[sym.group()] = search.group()
+            # Encontrar cada término
+            t = terminos.finditer(f)
+            s = list(t)
+            # Separar coeficientes para agregarlos a la matriz, e incorporar
+            # las variables restantes a las columnas del dataframe
+            coeficientes, columns = search_variables_y_coeficientes(s,columns)
             # Determinar el lado derecho y agregarlo.
             lado_derecho = ld.search(f)
             l_d = digit.search(lado_derecho.group()[1:])
-            coefis["LD"] = l_d.group()
-            coe.append(coefis)
+            coeficientes["LD"] = l_d.group()
+            matriz_coeficientes.append(coeficientes)
         columns.append("LD")
-            
-        # Armar la matriz
-        df = pd.DataFrame(data = coe, columns=columns)
 
-        # Limpiar valores NaN del dataframe
-        for i in range(len(df)):
-            df.loc[i] = df.loc[i].fillna(0)
-            df.loc[i] = pd.to_numeric(df.loc[i])
+        # Armar la matriz
+        df = pd.DataFrame(data = matriz_coeficientes, columns=columns)
+        df = limpiar_dataframe(df)
+
+        print(df)
 
         # Exportar dataframe
         df.to_csv("./data1.csv")
-
-        print("====================Dataframe====================")
-        print(df)
-        print("====================Array de Numpy====================")
-        arr = df.to_numpy()
-        print(arr)
-
-        print("====================Método====================")
-        simplex_estandar()
     else:
         simplex_m2f()
