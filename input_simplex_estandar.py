@@ -44,12 +44,15 @@ def search_variables_y_coeficientes(lista:list, columns:list):
 
     return coeficientes, columns
 
-def agregar_holguras(res:list, desigualdad:str):
+def agregar_holguras(res:list, desigualdad:str, VB:list):
     # Ampliar restricciones (con holguras)
     restricciones_ampliadas = []
     for r in range(len(res)):
         split = res[r].split(desigualdad)
         holgura = "h{}".format(r+1)
+        # Agregar la variable de holgura a la lista de variables básicas
+        if holgura not in VB:
+            VB.append(holgura)
         restriccion_ampliada = "{}+ {} ={}".format(split[0],holgura,split[1])
         restricciones_ampliadas.append(restriccion_ampliada)
     return restricciones_ampliadas

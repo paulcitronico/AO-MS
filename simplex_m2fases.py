@@ -283,24 +283,25 @@ def crear_2da_matriz(matriz, z_ampliado):
     print(matriz)
     return matriz
 
+if __name__ == "__main__":
 #===========================================================================================================================
 #################### Zona de testeo ########################################################################################
 #===========================================================================================================================
-matriz = crear_matriz()     # crear matriz con los datos
+    matriz = crear_matriz()     # crear matriz con los datos
 
-columnas_artificiales = seleccionar_variables_por_nombre(matriz,'a')    #seleccionar la lista de columnas a trabajar
+    columnas_artificiales = seleccionar_variables_por_nombre(matriz,'a')    #seleccionar la lista de columnas a trabajar
 
-for i in range(len(columnas_artificiales)):
-   matriz = reduccion_gauss(matriz,columnas_artificiales[i])    # se actualiza la matriz con la nueva matriz constantemente
+    for i in range(len(columnas_artificiales)):
+        matriz = reduccion_gauss(matriz,columnas_artificiales[i])    # se actualiza la matriz con la nueva matriz constantemente
 
-#restricciones = 60x1 + 60x2 >= 300, 12x1 + 6x2 >= 36,10x1 + 30x2 >= 90
+    #restricciones = 60x1 + 60x2 >= 300, 12x1 + 6x2 >= 36,10x1 + 30x2 >= 90
 
-negativo = True
-while negativo == True:
-    columna_pivote = buscar_columna_pivote(matriz,0)            # buscar columna pivote en la fila Z
-    negativo = columna_pivote[1]                                # verfica si la columna pivote tiene un valor negativo
-    if negativo == True:                                        # si es negativo se hace la reduccion
-        matriz = reduccion_gauss(matriz,columna_pivote[0])      # reduccion gaussiana
+    negativo = True
+    while negativo == True:
+        columna_pivote = buscar_columna_pivote(matriz,0)            # buscar columna pivote en la fila Z
+        negativo = columna_pivote[1]                                # verfica si la columna pivote tiene un valor negativo
+        if negativo == True:                                        # si es negativo se hace la reduccion
+            matriz = reduccion_gauss(matriz,columna_pivote[0])      # reduccion gaussiana
 
 
 #z = '-Z + 0.12x1 + 0.15x2 = 0'

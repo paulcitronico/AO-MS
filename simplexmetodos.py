@@ -1,5 +1,6 @@
 # se importa la libreria para usar ramdom
 import random
+import pandas as pd
 
 #se crea una funcion que recorre la primera fila de la matriz menos uno
 #y retorna el valor mas negativo
@@ -41,7 +42,7 @@ def opFilapivote(matriz,posicionFila,posicionColumna):
 #se crea una funcion llamada opOtrasfilas que recibe una matriz,
 #una posicion de la fila pivote y una posicion de la columna pivote
 #se realiza operacion en otras filas sin modificar la fila pivote
-def opOtrasfilas(matriz,posicionFila,posicionColumna):
+def opOtrasfilas(matriz,posicionFila,posicionColumna, VB:list, columns:list):
     #se recorre la matriz
     for i in range(len(matriz)):
         #se verifica si la posicion es diferente de la fila pivote
@@ -52,7 +53,12 @@ def opOtrasfilas(matriz,posicionFila,posicionColumna):
             for j in range(len(matriz[i])):
                 #se realiza la operacion en la fila pivote
                 matriz[i][j] = matriz[i][j] - (pivote * matriz[posicionFila][j])
-    return matriz
+    #print("Variable Básica => ({}), Variable Holgura a Reemplazar => ({})".format(columns[posicionColumna],VB[posicionFila]))
+    VB[posicionFila] = columns[posicionColumna]
+    df_matriz = pd.DataFrame(matriz, columns=columns)
+    df_matriz.index = VB
+
+    return matriz, df_matriz
 
 
 
@@ -67,7 +73,8 @@ def crearArchivo(matriz):
         archivo.write("\n")
     archivo.write("\n")
     archivo.close()
-    
+
+"""    
 #test de metodos
 #-------------------------------
 #se crea una matriz del ejemplo puertas y ventanas
@@ -104,3 +111,4 @@ while min(matriz[0]) < 0:
     print(matriz)
     print("-------------------------------")
 #-------------------------------
+"""

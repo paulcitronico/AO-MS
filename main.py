@@ -20,12 +20,14 @@ if len(des) > 1:
 else:
     # Segundo caso: encontrar una desigualdad
     if des[0] == "<=":
+        VB = []
         columns = []
         # Generar la matriz con los coeficientes para generar el dataframe
         matriz_coeficientes = []
         # Necesitamos encontrar los términos de la función objetivo para posteriormente ampliarla.
         z = list(terminos.finditer(Z))
-
+        # Agregar el término Z a la lista de variables básicas
+        VB.append(z[0].group())
         template = ""
         # Iteramos cada término de la función objetivo
         for e in range(1, len(z)):
@@ -50,7 +52,8 @@ else:
         matriz_coeficientes.append(coeficientes)
 
         # como son restricciones de menor o igual, se agregan variables de holgura a las restricciones
-        restricciones_ampliadas = agregar_holguras(res, des[0])
+        # Además de agregar las variables de holgura a la lista de variables básicas
+        restricciones_ampliadas = agregar_holguras(res, des[0], VB)
 
         # Para cada restricción ampliada
         for f in restricciones_ampliadas:
@@ -71,26 +74,38 @@ else:
         df = pd.DataFrame(data = matriz_coeficientes, columns=columns)
         df = limpiar_dataframe(df)
 
+        df.index = VB
+        print("Tablero Inicial")
         print(df)
+
+        dataframes = [df]
         #matriz principal
         matriz=df.to_numpy()
         #se crea un archivo csv con la matriz inicial
-        crearArchivo(matriz)
-        print(matriz)
-        print("columna pivote: "+str(columnaPivote(matriz)))
-        print("fila pivote: "+str(filaPivote(matriz,columnaPivote(matriz))))
+        #crearArchivo(matriz)
+        #print(matriz)
+        #print("columna pivote: "+str(columnaPivote(matriz)))
+        #print("fila pivote: "+str(filaPivote(matriz,columnaPivote(matriz))))
         #se crea un bucle que termina cuando los valores de la primera fila de la matriz son >= 0
         #en cada iteracion se crea un archivo csv con la matriz reducida
+        
+        pasos = 1
         while min(matriz[0]) < 0:
-            matriz = opOtrasfilas(opFilapivote(matriz,filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz)),filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz))
-            crearArchivo(matriz)
+            matriz, df_matriz = opOtrasfilas(opFilapivote(matriz,filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz)),filaPivote(matriz,columnaPivote(matriz)),columnaPivote(matriz), VB, columns)
+            print("Iteración número: {}".format(pasos))
+            print(df_matriz)
+            dataframes.append(df_matriz)
+            pasos += 1
+            #crearArchivo(matriz)
             #print(matriz)
             #print("columna pivote: "+str(columnaPivote(matriz)))
             #print("fila pivote: "+str(filaPivote(matriz,columnaPivote(matriz))))
             #print("matriz reducida")
             #print(matriz)
             #print("-------------------------------")
-        # Exportar dataframe
-        df.to_csv("./data1.csv")
+        # Crear archivo con cada iteración
+        df_1 = pd.concat(dataframes)
+        df_1.to_csv("./data1.csv")
+        
     else:
         simplex_m2f()
