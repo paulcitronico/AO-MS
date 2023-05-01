@@ -74,6 +74,12 @@ def crearArchivo(matriz):
     archivo.write("\n")
     archivo.close()
 
+# se agrega el incremento a cada elemento de las restricciones
+#y retorna las nuevas restricciones
+def resIncrementada(res,incremento):
+    for i in range(len(res)):
+        res[i] = res[i]+incremento
+    return res
 """    
 #test de metodos
 #-------------------------------

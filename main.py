@@ -106,6 +106,21 @@ else:
         # Crear archivo con cada iteración
         df_1 = pd.concat(dataframes)
         df_1.to_csv("./data1.csv")
+
+        #se guarda el df final en una variable
+        ultima_tabla = dataframes[-1]
+        # recibimos el nuevo incremento a la restriccion
+        incremento = str(input("Ingrese el incremento a la restricción: "))
+        #al incremento se le concatena el incremento recibido
+        incremento ="+"+incremento
+        #llamado a la fun 
+        resI=resIncrementada(res, incremento)
+        
+        
+        # print(resI)
+        #se crea el ciclo 
+        pasos = 1
+        
         
     else:
         simplex_m2f()
