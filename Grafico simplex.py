@@ -2,9 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import linprog
 import sympy
+from matplotlib.path import Path
+from matplotlib.patches import PathPatch
 
 def vRestric():
-    ################### ENTRADA DE LOS MULTIPLICADORES DE VADA X Y EL LADO DERECHO ###################
+    ################### ENTRADA DE LOS MULTIPLICADORES DE CADA X Y EL LADO DERECHO ###################
+
     masdata = input('¿Tiene valores? (si/no) ')  # Print para el ingreso de x1, x2 y el lado derecho ld
     valoresxy = np.empty((0, 2), int)  # Arreglo vacio creado con np.empty que tiene una dimension de (0,2), este guarda los valores de x e y en las restricciones
     LDrest = np.empty((0, 1), int) # Arreglo vacio creado con np.empty que tiene una dimension de (0,1), este guarda el lado derecho de las restricciones
@@ -43,32 +46,48 @@ def vRestric():
     x = sympy.symbols('x') # Crea un símbolo llamado 'x'. Este símbolo puede ser utilizado para construir expresiones algebraicas
     #fig, ax = plt.subplots(figsize=(8, 8))
 
-    x_vals = np.linspace(0, 60, 1000) # Array unidimencional que servira como limites de graficacion de cada recta, en este caso estan definidas para que partan del 0 a el 60 positivo y genera 1000 valores entre estos
+    x_vals = np.linspace(-100, 100, 1000) # Array unidimencional que servira como limites de graficacion de cada recta, en este caso estan definidas para que partan del 0 a el 60 positivo y genera 1000 valores entre estos
     for ecuacion in ecuaciones: #recorre ecuacion en ecuaciones
         try:
             f = sympy.sympify(ecuacion) # Se utiliza para convertir una cadena de caracteres en una expresión simbólica -> String a ecuacion de sympy
             y_vals = np.array([f.subs(x, i) for i in x_vals]) # En cada iteración, la expresión utiliza el método subs() de SymPy para evaluar la expresión simbólica f en el valor actual de x y esto es iterado en x_vals
             plt.plot(x_vals, y_vals, label=ecuacion) # .plot se usa pra graficar tiene como parametros los valores de x(x_vals), y(y_vals) y el label que ser[a la ecuacion
-            # plt.fill_between(x_vals, y_vals, alpha=0.1)
+            plt.fill_between(x_vals, 0, y_vals, alpha=0.1)
         except:
-            print(f"La ecuación {ecuacion} no es válida") #en caso de que la ecuacion no sea valida la rechaza
+            print(f"algo falla") #en caso de que la ecuacion no sea valida la rechaza
 
-    ################### PROCESO PARA CALCULAR EL PUNTO MAXIMO ###################
+    ################### PROCESO PARA CALCULAR EL PUNTO MAXIMO Y MINIMO ###################
 
-    c = np.array([-22, -45]) # Array NumPy unidimensional que contiene los coeficientes de la función objetivo
-    res = linprog(c, A_ub=valoresxy, b_ub=LDrest, bounds=(x1_, x2_), method='highs')
-    # A_ub = array NumPy bidimensional que contiene los coeficientes de las restricciones de desigualdad del problema
-    # b_ub = array NumPy unidimensional que contiene los límites superiores de las restricciones de desigualdad del problema
-    # bounds = tupla que contiene las restricciones de las variables de decisión del problema.
-    # contiene el límite inferior y el límite superior de la variable de decisión correspondiente.
-    # method = un string que indica el método de solución a utilizar. En este caso, se establece el valor de method en 'highs'
-    vert = (res.x[0], res.x[1]) # guarda los valores optimos.
-    # res.x[0] y res.x[1] se utiliza para acceder a los valores óptimos de las dos variables de decision.
-    # En la sintaxis, res es el objeto OptimizeResult devuelto por la función linprog() y
-    # x es un atributo del objeto que contiene los valores óptimos de las variables de decisión
-    plt.plot(vert[0], vert[1], 'ro', markersize=10) #se grafica la tupla vert con los valores en su posicion 0 y 1
+    c = np.empty((0, 1), int) # Array NumPy unidimensional que contiene los coeficientes de la función objetivo
 
-    ################### PARAMETROS GENERALES PARA EL GRAFICO ###################
+    x1f = int(input('Ingrese el cuociente de x1 en la funcion objetivo pero negativo: '))
+    x2f = int(input('Ingrese el cuociente de x2 en la funcion objetivo pero negativo: '))
+
+    c = np.append(c, [x1f, x2f] )
+
+    #c = np.array([-2, -2])
+    print(c)
+
+    selectOption = input('¿Desea maximizar o minimizar la función? (maximizar/minimizar) ')
+    if selectOption.lower() == 'maximizar':
+        res = linprog(c, A_ub=valoresxy, b_ub=LDrest, bounds=(x1_, x2_), method='highs')
+        # A_ub = array NumPy bidimensional que contiene los coeficientes de las restricciones de desigualdad del problema
+        # b_ub = array NumPy unidimensional que contiene los límites superiores de las restricciones de desigualdad del problema
+        # bounds = tupla que contiene las restricciones de las variables de decisión del problema.
+        # contiene el límite inferior y el límite superior de la variable de decisión correspondiente.
+        # method = un string que indica el método de solución a utilizar. En este caso, se establece el valor de method en 'highs'
+        vert = (res.x[0], res.x[1]) # guarda los valores optimos.
+        # res.x[0] y res.x[1] se utiliza para acceder a los valores óptimos de las dos variables de decision.
+        # En la sintaxis, res es el objeto OptimizeResult devuelto por la función linprog() y
+        # x es un atributo del objeto que contiene los valores óptimos de las variables de decisión
+        plt.plot(vert[0], vert[1], 'ro', markersize=10, label= vert) #se grafica la tupla vert con los valores en su posicion 0 y 1
+    elif selectOption.lower() == 'minimizar':
+        res = linprog(c, A_ub=valoresxy, b_ub=LDrest, bounds=(x1_, x2_))
+        min = int(res.fun)
+        plt.plot(min, 'ro', markersize=10, label= min)
+
+    ################### PARAMETROS GENERALES PARA EL GRAFICO ####################
+
     plt.axhline(0, color="black")
     plt.axvline(0, color="black")
     plt.xlim(x1_)
