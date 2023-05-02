@@ -377,3 +377,5 @@ def m2f_main(res,fz,minimizacion):
             pos_fila = obtener_fila_pivote(matriz_fase_2,columna_pivote[0])                     # obtiene el numero de la fila
             fila_pivote = seleccionar_fila(matriz_fase_2,pos_fila)                              # obtiene la fila pivote
             matriz_fase_2 = matriz_fase_2.rename(index={fila_pivote.name:columna_pivote[0]})    # cambia el nombre de la fila pivote por el nombre de la columna pivote con la que acaba de hacer reduccion gaussiana
+
+m2f_main(res,fz,minimizacion)
